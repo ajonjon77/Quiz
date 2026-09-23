@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>考古題隨機測驗</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; max-width: 650px; margin: 40px auto; padding: 20px; }
+    .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: relative; }
+    h2 { color: #333; margin-top: 0; }
+    .status-bar { font-size: 14px; color: #666; margin-bottom: 15px; font-weight: bold; display: flex; justify-content: space-between; background: #e9ecef; padding: 8px 15px; border-radius: 6px; }
+    .btn { background-color: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; width: 100%; margin-top: 15px; }
+    .btn:hover { background-color: #0056b3; }
+    .option-btn { display: block; width: 100%; text-align: left; background: #f8f9fa; border: 1px solid #ddd; padding: 12px; margin: 8px 0; border-radius: 6px; cursor: pointer; font-size: 15px; line-height: 1.4; }
+    .option-btn:hover { background: #e2e6ea; }
+    .correct { background-color: #d4edda !important; border-color: #c3e6cb !important; color: #155724; font-weight: bold; }
+    .wrong { background-color: #f8d7da !important; border-color: #f5c6cb !important; color: #721c24; font-weight: bold; }
+    #loading { text-align: center; color: #666; font-size: 18px; }
+    #result-msg { margin-top: 15px; font-size: 16px; font-weight: bold; text-align: left; line-height: 1.5; }
+    .comment-box { margin-top: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px 12px; border-radius: 6px; font-weight: normal; font-size: 14px; }
+    .score-card { text-align: center; padding: 20px 0; }
+    .score-card h3 { font-size: 24px; color: #28a745; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="loading">⏳ 正在從 Google 試算表載入題庫中...</div>
+    
+    <div id="quiz-box" style="display: none;">
+      <!-- 頂部進度條 -->
+      <div class="status-bar">
+        <span id="question-counter">第 1 題 / 本輪共 20 題</span>
+        <span id="current-score-tracker">答對：0 題</span>
+      </div>
+
+      <h3 id="question-text"></h3>
+      <div id="options-container"></div>
+      <div id="result-msg"></div>
+      <button class="btn" id="next-btn" onclick="nextQuestion()" style="display: none;">下一題 ➔</button>
+    </div>
+
+    <!-- 20 題結算畫面 -->
+    <div id="score-box" class="score-card" style="display: none;">
+      <h2>🎉 本輪測驗結束！</h2>
+      <h3 id="final-score-text">得分：100 分</h3>
+      <p id="score-detail-text">共答對 20 題，答錯 0 題</p>
+      <button class="btn" onclick="startNewBatch()">開啟新一輪測驗</button>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbw2CZXQn9kzdKwLxKb_G9lKTCwe5Jq9VV7RCwBk578iJw1VTtv24jaDTTJsx6eZ2B76/exec";
+
+    let allQuestions = [];       // 完整題庫
+    let availableQuestions = []; // 本輪尚未抽過的題目池
+    let currentQuestion = null;
+    
+    // 計分與題數相關變數
+    let batchQuestionCount = 0;  // 本輪已回答題數 (最多 20 題)
+    let totalBatchQuestions = 20; // 本輪總題數
+    let correctCount = 0;        // 本輪答對題數
+
+    // 1. 初始化：從 Google 試算表抓取題庫
+    async function fetchQuestions() {
+      try {
+        const response = await fetch(API_URL);
+        allQuestions = await response.json();
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('quiz-box').style.display = 'block';
+        
+        startNewBatch();
+      } catch (error) {
+        document.getElementById('loading').innerText = '❌ 載入題庫失敗，請檢查 API 網址與存取權限設定。';
+        console.error(error);
+      }
+    }
+
+    // 2. 開啟新一輪測驗（重置與洗牌不重複題目）
+    function startNewBatch() {
+      batchQuestionCount = 0;
+      correctCount = 0;
+      
+      // 複製一份題庫作為本輪可用題目池
+      availableQuestions = [...allQuestions];
+      
+      // 計算本輪實際題數 (若題庫不足 20 題，以總題數為主)
+      totalBatchQuestions = Math.min(20, availableQuestions.length);
+
+      document.getElementById('score-box').style.display = 'none';
+      document.getElementById('quiz-box').style.display = 'block';
+      nextQuestion();
+    }
+
+    // 3. 隨機抽取「未重複」的一題
+    function nextQuestion() {
+      // 檢查是否已達本輪題數上限或無題目可抽
+      if (batchQuestionCount >= totalBatchQuestions || availableQuestions.length === 0) {
+        showBatchScore();
+        return;
+      }
+
+      batchQuestionCount++;
+      
+      // 更新頂部進度條
+      document.getElementById('question-counter').innerText = `第 ${batchQuestionCount} 題 / 本輪共 ${totalBatchQuestions} 題`;
+      document.getElementById('current-score-tracker').innerText = `答對：${correctCount} 題`;
+
+      document.getElementById('result-msg').innerHTML = '';
+      document.getElementById('next-btn').style.display = 'none';
+
+      // 從未抽過的題目池中隨機選取一題
+      const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+      currentQuestion = availableQuestions[randomIndex];
+      
+      // 將抽出的題目從可用題目池移除，確保不會重複
+      availableQuestions.splice(randomIndex, 1);
+
+      // 題目前面加上本輪題號
+      document.getElementById('question-text').innerText = `${batchQuestionCount}. ${currentQuestion.question}`;
+
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+
+      const labels = ['A', 'B', 'C', 'D'];
+      currentQuestion.options.forEach((optText, index) => {
+        if (optText !== undefined && optText !== "") { 
+          const btn = document.createElement('button');
+          btn.className = 'option-btn';
+          btn.innerText = `${labels[index]}. ${optText}`;
+          btn.onclick = () => checkAnswer(labels[index], btn);
+          optionsContainer.appendChild(btn);
+        }
+      });
+    }
+
+    // 4. 檢查答案
+    function checkAnswer(selectedOption, clickedBtn) {
+      const allOptionBtns = document.querySelectorAll('.option-btn');
+      allOptionBtns.forEach(btn => btn.disabled = true); // 禁用所有選項按鈕
+
+      const correctAns = String(currentQuestion.answer).trim().toUpperCase();
+
+      if (selectedOption === correctAns) {
+        correctCount++;
+        clickedBtn.classList.add('correct');
+        document.getElementById('result-msg').innerHTML = '<div style="color: green;">🎉 回答正確！</div>';
+      } else {
+        clickedBtn.classList.add('wrong');
+        
+        let resultHTML = `<div style="color: red;">❌ 答錯了！正確答案是：${correctAns}</div>`;
+        
+        // 如果答錯且有 comment 說明，則顯示說明框
+        if (currentQuestion.comment && currentQuestion.comment.trim() !== "") {
+          resultHTML += `
+            <div class="comment-box">
+              💡 <strong>解析說明：</strong> ${currentQuestion.comment.trim()}
+            </div>
+          `;
+        }
+        
+        document.getElementById('result-msg').innerHTML = resultHTML;
+      }
+
+      // 更新即時計分
+      document.getElementById('current-score-tracker').innerText = `答對：${correctCount} 題`;
+
+      // 顯示「下一題」按鈕
+      const nextBtn = document.getElementById('next-btn');
+      if (batchQuestionCount >= totalBatchQuestions) {
+        nextBtn.innerText = "查看本輪成績 📊";
+      } else {
+        nextBtn.innerText = "下一題 ➔";
+      }
+      nextBtn.style.display = 'block';
+    }
+
+    // 5. 結算分數畫面 (滿分 100 分)
+    function showBatchScore() {
+      document.getElementById('quiz-box').style.display = 'none';
+      document.getElementById('score-box').style.display = 'block';
+
+      // 依比例計算滿分 100 分得分
+      const finalScore = Math.round((correctCount / totalBatchQuestions) * 100);
+      document.getElementById('final-score-text').innerText = `得分：${finalScore} 分`;
+      document.getElementById('score-detail-text').innerText = `本輪共 ${totalBatchQuestions} 題，答對 ${correctCount} 題，答錯 ${totalBatchQuestions - correctCount} 題`;
+    }
+
+    // 頁面載入後自動執行
+    fetchQuestions();
+  </script>
+
+</body>
+</html>
