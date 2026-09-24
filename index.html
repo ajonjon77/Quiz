@@ -189,7 +189,8 @@
       if (currentQuestion.comment && currentQuestion.comment.trim() !== "") {
         resultHTML += `
           <div class="comment-box">
-            💡 <strong>解析說明：</strong> <span id="displayed-comment">${currentQuestion.comment.trim()}</span>
+            💡 <strong>解析說明：</strong><br>
+			<span id="displayed-comment">${currentQuestion.comment.trim()}</span>
           </div>
         `;
       }
