@@ -22,6 +22,7 @@
     
     .stats-badge { background-color: #e2e3e5; color: #383d41; font-size: 13px; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 10px; font-weight: normal; }
     .comment-box { margin-top: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px 12px; border-radius: 6px; font-weight: normal; font-size: 14px; }
+    .comment-note { margin-top: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px 12px; border-radius: 6px; font-weight: normal; font-size: 14px; }
     
     /* 筆記彈窗與編輯區 */
     .note-editor { display: none; margin-top: 12px; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ced4da; }
@@ -45,6 +46,8 @@
 
       <h3 id="question-text"></h3>
       <div id="options-container"></div>
+
+      <button class="btn" id="next-btn" onclick="nextQuestion()" style="display: none;">下一題 ➔</button>
       <div id="result-msg"></div>
 
       <!-- 編輯筆記區塊 -->
@@ -56,8 +59,6 @@
           <span id="note-status" style="font-size: 12px; margin-left: 8px;"></span>
         </div>
       </div>
-
-      <button class="btn" id="next-btn" onclick="nextQuestion()" style="display: none;">下一題 ➔</button>
     </div>
 
     <!-- 20 題結算畫面 -->
@@ -66,6 +67,32 @@
       <h3 id="final-score-text">得分：100 分</h3>
       <p id="score-detail-text">共答對 20 題，答錯 0 題</p>
       <button class="btn" onclick="startNewBatch()">開啟新一輪測驗</button>
+	  <div class="comment-note" style="text-align: left;">
+		💡 <strong>考試重點複習指南</strong><br>
+			在完成上面的模擬題後，建議針對以下 v16 的核心概念進行強化：<br>
+				  <ol style="padding-left: 20px; margin-top: 8px; margin-bottom: 0;">
+					<li><strong>系統目錄與 psql 元命令：</strong>熟記常考的系統目錄（如 pg_database, pg_class）與 psql 反斜線指令（如 \dn 列出所有 Schema、\e 開啟文字編輯器修改上一條 Query Buffer）。</li>
+					<li><strong>連線與安全管理：</strong>
+					  <ul style="padding-left: 20px; margin-top: 4px;">
+						<li><code>max_connections</code>：控制叢集允許的最大用戶連線數。</li>
+						<li><code>superuser_reserved_connections</code>：專門保留給超級使用者（Superuser）的連線數，避免一般連線爆滿時管理員無法登入。</li>
+						<li>連線中斷函數：<code>pg_terminate_backend(pid)</code> 用於優雅且強制斷開特定用戶的連線。</li>
+					  </ul>
+					</li>
+					<li><strong>日常維護與記憶體調整：</strong>
+					  <ul style="padding-left: 20px; margin-top: 4px;">
+						<li><code>maintenance_work_mem</code>：直接影響 VACUUM、CREATE INDEX 以及外鍵常規維護操作的執行效能。</li>
+						<li><code>pg_reload_conf()</code>：用於在不重啟 PostgreSQL 服務的前提下，直接重新載入 postgresql.conf 設定檔。</li>
+					  </ul>
+					</li>
+					<li><strong>備份與還原工具：</strong>
+					  <ul style="padding-left: 20px; margin-top: 4px;">
+						<li>pg_dump 選項：<code>-a</code> 或 <code>--data-only</code> 僅導出數據；<code>--inserts</code> 改用 INSERT 語句而非預設的 COPY。</li>
+						<li>pg_restore 選項：<code>-s</code> 或 <code>--schema-only</code> 僅針對自訂格式備份進行結構還原。</li>
+					  </ul>
+					</li>
+				  </ol>
+          </div>
     </div>
   </div>
 
