@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -6,21 +5,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PostgreSQL 認證考試複習指南</title>
 <style>
-  body { font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif; max-width: 960px; margin: 0 auto; padding: 20px 30px; background: #f8f9fa; color: #333; line-height: 1.7; }
-  h1 { text-align: center; color: #336791; border-bottom: 3px solid #336791; padding-bottom: 12px; }
-  h2 { color: #fff; background: #336791; padding: 10px 18px; border-radius: 6px; margin-top: 40px; }
-  h3 { color: #336791; border-left: 4px solid #336791; padding-left: 12px; margin-top: 28px; }
-  table { width: 100%; border-collapse: collapse; margin: 14px 0 20px 0; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  th { background: #336791; color: #fff; padding: 10px 14px; text-align: left; }
-  td { padding: 8px 14px; border-bottom: 1px solid #e0e0e0; }
+  /* 全域基本樣式 */
+  * { box-sizing: border-box; }
+  body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif; 
+    max-width: 960px; 
+    margin: 0 auto; 
+    padding: 20px 15px; 
+    background: #f8f9fa; 
+    color: #333; 
+    line-height: 1.7; 
+  }
+
+  /* 標題與段落 */
+  h1 { text-align: center; color: #336791; border-bottom: 3px solid #336791; padding-bottom: 12px; font-size: 1.8rem; word-break: break-word; }
+  h2 { color: #fff; background: #336791; padding: 10px 16px; border-radius: 6px; margin-top: 35px; font-size: 1.35rem; }
+  h3 { color: #336791; border-left: 4px solid #336791; padding-left: 12px; margin-top: 24px; font-size: 1.15rem; }
+  p, li { word-break: break-word; }
+
+  /* 響應式表格包裹容器 */
+  .table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 14px 0 20px 0;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  table { width: 100%; border-collapse: collapse; background: #fff; white-space: nowrap; }
+  th { background: #336791; color: #fff; padding: 10px 14px; text-align: left; font-size: 0.95rem; }
+  td { padding: 10px 14px; border-bottom: 1px solid #e0e0e0; font-size: 0.95rem; }
   tr:hover { background: #eef3f7; }
-  code { background: #e8eef3; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', 'Courier New', monospace; color: #c7254e; }
-  pre { background: #2d2d2d; color: #f8f8f2; padding: 16px; border-radius: 6px; overflow-x: auto; font-size: 14px; }
-  .tip { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 16px; margin: 14px 0; border-radius: 4px; }
-  .important { background: #d4edda; border-left: 4px solid #28a745; padding: 10px 16px; margin: 14px 0; border-radius: 4px; }
-  ul { padding-left: 24px; }
-  li { margin-bottom: 4px; }
+
+  /* 程式碼與區塊 */
+  code { background: #e8eef3; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', 'Courier New', monospace; color: #c7254e; font-size: 0.9em; word-break: break-word; }
+  pre { background: #2d2d2d; color: #f8f8f2; padding: 14px; border-radius: 6px; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+  
+  /* 提示框 */
+  .tip { background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 16px; margin: 14px 0; border-radius: 4px; word-break: break-word; }
+  .important { background: #d4edda; border-left: 4px solid #28a745; padding: 10px 16px; margin: 14px 0; border-radius: 4px; word-break: break-word; }
+  
+  ul, ol { padding-left: 20px; }
+  li { margin-bottom: 6px; }
   strong { color: #1a3a5c; }
+
+  /* 電腦端微調 (螢幕寬度 >= 768px) */
+  @media (min-width: 768px) {
+    body { padding: 30px 40px; }
+    h1 { font-size: 2.2rem; }
+    h2 { font-size: 1.5rem; padding: 12px 20px; }
+    h3 { font-size: 1.25rem; }
+    /* 螢幕較寬時可讓表格內容自然換行 */
+    table { white-space: normal; }
+  }
 </style>
 </head>
 <body>
@@ -40,39 +77,45 @@
 </ul>
 
 <h3>背景程序</h3>
-<table>
-  <tr><th>程序</th><th>功能</th></tr>
-  <tr><td><strong>Background Writer</strong></td><td>將 Dirty Data Blocks 寫入磁碟</td></tr>
-  <tr><td><strong>WAL Writer</strong></td><td>定期將 WAL 刷新至磁碟</td></tr>
-  <tr><td><strong>Checkpointer</strong></td><td>自動執行 Checkpoint</td></tr>
-  <tr><td><strong>Autovacuum Launcher</strong></td><td>啟動 Autovacuum Worker</td></tr>
-  <tr><td><strong>Autovacuum Workers</strong></td><td>回收 Dead Tuples 佔用的空間</td></tr>
-  <tr><td><strong>Archiver</strong></td><td>封存 WAL 檔案</td></tr>
-  <tr><td><strong>Logging Collector</strong></td><td>路由 Log 訊息至 syslog/eventlog/log 檔案</td></tr>
-  <tr><td><strong>Logical Replication Launcher</strong></td><td>啟動邏輯複寫的 Apply Process</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>程序</th><th>功能</th></tr>
+    <tr><td><strong>Background Writer</strong></td><td>將 Dirty Data Blocks 寫入磁碟</td></tr>
+    <tr><td><strong>WAL Writer</strong></td><td>定期將 WAL 刷新至磁碟</td></tr>
+    <tr><td><strong>Checkpointer</strong></td><td>自動執行 Checkpoint</td></tr>
+    <tr><td><strong>Autovacuum Launcher</strong></td><td>啟動 Autovacuum Worker</td></tr>
+    <tr><td><strong>Autovacuum Workers</strong></td><td>回收 Dead Tuples 佔用的空間</td></tr>
+    <tr><td><strong>Archiver</strong></td><td>封存 WAL 檔案</td></tr>
+    <tr><td><strong>Logging Collector</strong></td><td>路由 Log 訊息至 syslog/eventlog/log 檔案</td></tr>
+    <tr><td><strong>Logical Replication Launcher</strong></td><td>啟動邏輯複寫的 Apply Process</td></tr>
+  </table>
+</div>
 
 <h3>記憶體架構</h3>
-<table>
-  <tr><th>類型</th><th>元件</th><th>說明</th></tr>
-  <tr><td rowspan="3"><strong>Shared Memory</strong></td><td><code>shared_buffers</code></td><td>共享緩衝池，快取磁碟資料</td></tr>
-  <tr><td><code>wal_buffers</code></td><td>WAL 緩衝區</td></tr>
-  <tr><td>Process Array</td><td>追蹤所有活躍程序</td></tr>
-  <tr><td rowspan="3"><strong>Per-Session</strong></td><td><code>work_mem</code></td><td>排序/雜湊操作記憶體</td></tr>
-  <tr><td><code>maintenance_work_mem</code></td><td>VACUUM、CREATE INDEX 等維護操作</td></tr>
-  <tr><td><code>temp_buffers</code></td><td>暫存表快取</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>類型</th><th>元件</th><th>說明</th></tr>
+    <tr><td rowspan="3"><strong>Shared Memory</strong></td><td><code>shared_buffers</code></td><td>共享緩衝池，快取磁碟資料</td></tr>
+    <tr><td><code>wal_buffers</code></td><td>WAL 緩衝區</td></tr>
+    <tr><td>Process Array</td><td>追蹤所有活躍程序</td></tr>
+    <tr><td rowspan="3"><strong>Per-Session</strong></td><td><code>work_mem</code></td><td>排序/雜湊操作記憶體</td></tr>
+    <tr><td><code>maintenance_work_mem</code></td><td>VACUUM、CREATE INDEX 等維護操作</td></tr>
+    <tr><td><code>temp_buffers</code></td><td>暫存表快取</td></tr>
+  </table>
+</div>
 
 <h3>SQL 處理流程</h3>
 <p><strong>Parse</strong>（語法檢查）→ <strong>Optimize</strong>（查詢計畫最佳化）→ <strong>Execute</strong>（執行）</p>
 
 <h3>磁碟寫入機制</h3>
-<table>
-  <tr><th>階段</th><th>說明</th></tr>
-  <tr><td><strong>Before Commit</strong></td><td>未提交的更新存在記憶體中</td></tr>
-  <tr><td><strong>After Commit</strong></td><td>WAL Buffers 寫入磁碟（WAL 檔案）</td></tr>
-  <tr><td><strong>After Checkpoint</strong></td><td>修改過的資料頁從 Shared Memory 寫入資料檔案</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>階段</th><th>說明</th></tr>
+    <tr><td><strong>Before Commit</strong></td><td>未提交的更新存在記憶體中</td></tr>
+    <tr><td><strong>After Commit</strong></td><td>WAL Buffers 寫入磁碟（WAL 檔案）</td></tr>
+    <tr><td><strong>After Checkpoint</strong></td><td>修改過的資料頁從 Shared Memory 寫入資料檔案</td></tr>
+  </table>
+</div>
 
 <div class="important">📌 每個 Page 大小為 <strong>8KB</strong></div>
 
@@ -80,47 +123,55 @@
 <h2>二、重要設定參數（postgresql.conf）</h2>
 
 <h3>連線設定</h3>
-<table>
-  <tr><th>參數</th><th>預設值</th><th>說明</th></tr>
-  <tr><td><code>listen_addresses</code></td><td><code>*</code></td><td>監聽位址</td></tr>
-  <tr><td><code>port</code></td><td><code>5432</code></td><td>TCP Port</td></tr>
-  <tr><td><code>max_connections</code></td><td><code>100</code></td><td>最大連線數</td></tr>
-  <tr><td><code>superuser_reserved_connections</code></td><td><code>3</code></td><td>超級使用者保留連線</td></tr>
-  <tr><td><code>reserved_connections</code></td><td><code>0</code></td><td>保留給特定角色的連線數</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>參數</th><th>預設值</th><th>說明</th></tr>
+    <tr><td><code>listen_addresses</code></td><td><code>*</code></td><td>監聽位址</td></tr>
+    <tr><td><code>port</code></td><td><code>5432</code></td><td>TCP Port</td></tr>
+    <tr><td><code>max_connections</code></td><td><code>100</code></td><td>最大連線數</td></tr>
+    <tr><td><code>superuser_reserved_connections</code></td><td><code>3</code></td><td>超級使用者保留連線</td></tr>
+    <tr><td><code>reserved_connections</code></td><td><code>0</code></td><td>保留給特定角色的連線數</td></tr>
+  </table>
+</div>
 
 <h3>記憶體設定</h3>
-<table>
-  <tr><th>參數</th><th>說明</th><th>建議</th></tr>
-  <tr><td><code>shared_buffers</code></td><td>共用緩衝池，快取磁碟資料（整個叢集共用）</td><td>系統記憶體的 25%</td></tr>
-  <tr><td><code>work_mem</code></td><td>每個 Session 的排序/雜湊操作記憶體</td><td>依查詢複雜度調整</td></tr>
-  <tr><td><code>maintenance_work_mem</code></td><td>VACUUM、CREATE INDEX 等維護操作</td><td>設較大值</td></tr>
-  <tr><td><code>effective_cache_size</code></td><td>估算索引掃描成本（不實際分配記憶體）</td><td>預設 4GB</td></tr>
-  <tr><td><code>temp_buffers</code></td><td>暫存資料表的快取記憶體</td><td>每個 Session 獨立</td></tr>
-  <tr><td><code>autovacuum_work_mem</code></td><td>Autovacuum worker 記憶體</td><td>預設 -1（使用 maintenance_work_mem）</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>參數</th><th>說明</th><th>建議</th></tr>
+    <tr><td><code>shared_buffers</code></td><td>共用緩衝池，快取磁碟資料（整個叢集共用）</td><td>系統記憶體的 25%</td></tr>
+    <tr><td><code>work_mem</code></td><td>每個 Session 的排序/雜湊操作記憶體</td><td>依查詢複雜度調整</td></tr>
+    <tr><td><code>maintenance_work_mem</code></td><td>VACUUM、CREATE INDEX 等維護操作</td><td>設較大值</td></tr>
+    <tr><td><code>effective_cache_size</code></td><td>估算索引掃描成本（不實際分配記憶體）</td><td>預設 4GB</td></tr>
+    <tr><td><code>temp_buffers</code></td><td>暫存資料表的快取記憶體</td><td>每個 Session 獨立</td></tr>
+    <tr><td><code>autovacuum_work_mem</code></td><td>Autovacuum worker 記憶體</td><td>預設 -1（使用 maintenance_work_mem）</td></tr>
+  </table>
+</div>
 
 <h3>WAL 設定</h3>
-<table>
-  <tr><th>參數</th><th>預設值</th><th>說明</th></tr>
-  <tr><td><code>wal_level</code></td><td><code>replica</code></td><td>WAL 記錄層級（minimal / replica / logical）</td></tr>
-  <tr><td><code>wal_buffers</code></td><td><code>-1</code>（自動）</td><td>WAL 緩衝區大小（約 shared_buffers 的 1/32）</td></tr>
-  <tr><td><code>min_wal_size</code></td><td><code>80MB</code></td><td>開始回收 WAL 檔案的大小</td></tr>
-  <tr><td><code>max_wal_size</code></td><td><code>1GB</code></td><td>強制 Checkpoint 的 WAL 大小</td></tr>
-  <tr><td><code>checkpoint_timeout</code></td><td><code>5 min</code></td><td>自動 Checkpoint 的最大間隔時間</td></tr>
-  <tr><td><code>fsync</code></td><td><code>on</code></td><td>每次 Commit 強制寫入磁碟</td></tr>
-  <tr><td>WAL segment 預設大小</td><td><strong>16MB</strong></td><td>可用 <code>initdb --wal-segsize</code> 自訂</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>參數</th><th>預設值</th><th>說明</th></tr>
+    <tr><td><code>wal_level</code></td><td><code>replica</code></td><td>WAL 記錄層級（minimal / replica / logical）</td></tr>
+    <tr><td><code>wal_buffers</code></td><td><code>-1</code>（自動）</td><td>WAL 緩衝區大小（約 shared_buffers 的 1/32）</td></tr>
+    <tr><td><code>min_wal_size</code></td><td><code>80MB</code></td><td>開始回收 WAL 檔案的大小</td></tr>
+    <tr><td><code>max_wal_size</code></td><td><code>1GB</code></td><td>強制 Checkpoint 的 WAL 大小</td></tr>
+    <tr><td><code>checkpoint_timeout</code></td><td><code>5 min</code></td><td>自動 Checkpoint 的最大間隔時間</td></tr>
+    <tr><td><code>fsync</code></td><td><code>on</code></td><td>每次 Commit 強制寫入磁碟</td></tr>
+    <tr><td>WAL segment 預設大小</td><td><strong>16MB</strong></td><td>可用 <code>initdb --wal-segsize</code> 自訂</td></tr>
+  </table>
+</div>
 
 <h3>修改參數方式</h3>
-<table>
-  <tr><th>方式</th><th>範圍</th><th>說明</th></tr>
-  <tr><td>編輯 <code>postgresql.conf</code></td><td>叢集層級</td><td>需重啟或 reload</td></tr>
-  <tr><td><code>ALTER SYSTEM SET</code></td><td>叢集層級</td><td>寫入 <code>postgresql.auto.conf</code></td></tr>
-  <tr><td><code>SET</code> 指令</td><td>Session 層級</td><td>僅影響當前連線</td></tr>
-  <tr><td><code>ALTER DATABASE</code></td><td>資料庫層級</td><td>針對特定資料庫</td></tr>
-  <tr><td><code>ALTER USER</code></td><td>使用者層級</td><td>針對特定使用者</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>方式</th><th>範圍</th><th>說明</th></tr>
+    <tr><td>編輯 <code>postgresql.conf</code></td><td>叢集層級</td><td>需重啟或 reload</td></tr>
+    <tr><td><code>ALTER SYSTEM SET</code></td><td>叢集層級</td><td>寫入 <code>postgresql.auto.conf</code></td></tr>
+    <tr><td><code>SET</code> 指令</td><td>Session 層級</td><td>僅影響當前連線</td></tr>
+    <tr><td><code>ALTER DATABASE</code></td><td>資料庫層級</td><td>針對特定資料庫</td></tr>
+    <tr><td><code>ALTER USER</code></td><td>使用者層級</td><td>針對特定使用者</td></tr>
+  </table>
+</div>
 
 <div class="tip">💡 查看參數：<code>SHOW shared_buffers;</code><br>
 重新載入設定：<code>SELECT pg_reload_conf();</code><br>
@@ -140,19 +191,21 @@
 </ul>
 
 <h3>認證方法</h3>
-<table>
-  <tr><th>方法</th><th>說明</th></tr>
-  <tr><td><code>trust</code></td><td>不需密碼（⚠️ 不建議生產環境）</td></tr>
-  <tr><td><code>reject</code></td><td>無條件拒絕連線</td></tr>
-  <tr><td><code>scram-sha-256</code></td><td>✅ 建議使用的密碼驗證方式</td></tr>
-  <tr><td><code>md5</code></td><td>MD5 密碼驗證</td></tr>
-  <tr><td><code>password</code></td><td>明文密碼（⚠️ 不建議）</td></tr>
-  <tr><td><code>peer</code></td><td>本地 OS 使用者名稱驗證（僅限本地連線）</td></tr>
-  <tr><td><code>ident</code></td><td>透過 ident 伺服器取得 OS 使用者名稱（TCP/IP）</td></tr>
-  <tr><td><code>ldap</code></td><td>LDAP 伺服器認證</td></tr>
-  <tr><td><code>radius</code></td><td>RADIUS 伺服器認證</td></tr>
-  <tr><td><code>cert</code></td><td>SSL 客戶端憑證認證</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>方法</th><th>說明</th></tr>
+    <tr><td><code>trust</code></td><td>不需密碼（⚠️ 不建議生產環境）</td></tr>
+    <tr><td><code>reject</code></td><td>無條件拒絕連線</td></tr>
+    <tr><td><code>scram-sha-256</code></td><td>✅ 建議使用的密碼驗證方式</td></tr>
+    <tr><td><code>md5</code></td><td>MD5 密碼驗證</td></tr>
+    <tr><td><code>password</code></td><td>明文密碼（⚠️ 不建議）</td></tr>
+    <tr><td><code>peer</code></td><td>本地 OS 使用者名稱驗證（僅限本地連線）</td></tr>
+    <tr><td><code>ident</code></td><td>透過 ident 伺服器取得 OS 使用者名稱（TCP/IP）</td></tr>
+    <tr><td><code>ldap</code></td><td>LDAP 伺服器認證</td></tr>
+    <tr><td><code>radius</code></td><td>RADIUS 伺服器認證</td></tr>
+    <tr><td><code>cert</code></td><td>SSL 客戶端憑證認證</td></tr>
+  </table>
+</div>
 
 <div class="tip">💡 密碼加密方式由 <code>password_encryption</code> 參數控制（預設：<code>scram-sha-256</code>）</div>
 
@@ -176,79 +229,91 @@
 <h2>四、psql 常用指令</h2>
 
 <h3>物件瀏覽指令</h3>
-<table>
-  <tr><th>指令</th><th>功能</th></tr>
-  <tr><td><code>\l</code></td><td>列出所有資料庫</td></tr>
-  <tr><td><code>\dt</code></td><td>列出所有資料表</td></tr>
-  <tr><td><code>\d tablename</code></td><td>顯示資料表結構（欄位、型別、約束）</td></tr>
-  <tr><td><code>\d+ objectname</code></td><td>顯示 View 或 Function 的 SQL 定義</td></tr>
-  <tr><td><code>\dn</code></td><td>列出所有 Schema</td></tr>
-  <tr><td><code>\du</code></td><td>列出所有角色</td></tr>
-  <tr><td><code>\df</code></td><td>列出所有函式</td></tr>
-  <tr><td><code>\db</code></td><td>列出所有 Tablespace</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>指令</th><th>功能</th></tr>
+    <tr><td><code>\l</code></td><td>列出所有資料庫</td></tr>
+    <tr><td><code>\dt</code></td><td>列出所有資料表</td></tr>
+    <tr><td><code>\d tablename</code></td><td>顯示資料表結構（欄位、型別、約束）</td></tr>
+    <tr><td><code>\d+ objectname</code></td><td>顯示 View 或 Function 的 SQL 定義</td></tr>
+    <tr><td><code>\dn</code></td><td>列出所有 Schema</td></tr>
+    <tr><td><code>\du</code></td><td>列出所有角色</td></tr>
+    <tr><td><code>\df</code></td><td>列出所有函式</td></tr>
+    <tr><td><code>\db</code></td><td>列出所有 Tablespace</td></tr>
+  </table>
+</div>
 
 <h3>連線與操作指令</h3>
-<table>
-  <tr><th>指令</th><th>功能</th></tr>
-  <tr><td><code>\connect dbname</code></td><td>切換資料庫</td></tr>
-  <tr><td><code>\i filename</code></td><td>執行 SQL 檔案</td></tr>
-  <tr><td><code>\e</code></td><td>編輯查詢緩衝區</td></tr>
-  <tr><td><code>\o filename</code></td><td>輸出結果至檔案</td></tr>
-  <tr><td><code>\w filename</code></td><td>儲存查詢緩衝區至檔案</td></tr>
-  <tr><td><code>\copy ... TO ... CSV</code></td><td>匯出 CSV</td></tr>
-  <tr><td><code>\conninfo</code></td><td>顯示連線資訊</td></tr>
-  <tr><td><code>\! command</code></td><td>執行 Shell 指令</td></tr>
-  <tr><td><code>\s</code></td><td>顯示命令歷史</td></tr>
-  <tr><td><code>\h</code></td><td>SQL 指令說明</td></tr>
-  <tr><td><code>\?</code></td><td>psql 指令說明</td></tr>
-  <tr><td><code>\q</code></td><td>離開 psql</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>指令</th><th>功能</th></tr>
+    <tr><td><code>\connect dbname</code></td><td>切換資料庫</td></tr>
+    <tr><td><code>\i filename</code></td><td>執行 SQL 檔案</td></tr>
+    <tr><td><code>\e</code></td><td>編輯查詢緩衝區</td></tr>
+    <tr><td><code>\o filename</code></td><td>輸出結果至檔案</td></tr>
+    <tr><td><code>\w filename</code></td><td>儲存查詢緩衝區至檔案</td></tr>
+    <tr><td><code>\copy ... TO ... CSV</code></td><td>匯出 CSV</td></tr>
+    <tr><td><code>\conninfo</code></td><td>顯示連線資訊</td></tr>
+    <tr><td><code>\! command</code></td><td>執行 Shell 指令</td></tr>
+    <tr><td><code>\s</code></td><td>顯示命令歷史</td></tr>
+    <tr><td><code>\h</code></td><td>SQL 指令說明</td></tr>
+    <tr><td><code>\?</code></td><td>psql 指令說明</td></tr>
+    <tr><td><code>\q</code></td><td>離開 psql</td></tr>
+  </table>
+</div>
 
 <h3>輸出格式控制</h3>
-<table>
-  <tr><th>指令</th><th>功能</th></tr>
-  <tr><td><code>\a</code></td><td>切換對齊/非對齊模式</td></tr>
-  <tr><td><code>\t</code></td><td>切換僅顯示 Tuples（不含欄位標題）</td></tr>
-  <tr><td><code>\x</code></td><td>切換擴展顯示模式</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>指令</th><th>功能</th></tr>
+    <tr><td><code>\a</code></td><td>切換對齊/非對齊模式</td></tr>
+    <tr><td><code>\t</code></td><td>切換僅顯示 Tuples（不含欄位標題）</td></tr>
+    <tr><td><code>\x</code></td><td>切換擴展顯示模式</td></tr>
+  </table>
+</div>
 
 <!-- ==================== 第五章 ==================== -->
 <h2>五、備份與還原（Backup &amp; Recovery）</h2>
 
 <h3>邏輯備份工具</h3>
-<table>
-  <tr><th>工具 / 格式</th><th>說明</th><th>還原方式</th></tr>
-  <tr><td><code>pg_dump -Fp</code></td><td>純文字格式（預設）</td><td><code>psql</code></td></tr>
-  <tr><td><code>pg_dump -Fc</code></td><td>壓縮自訂格式</td><td><code>pg_restore</code></td></tr>
-  <tr><td><code>pg_dump -Ft</code></td><td>Tar 格式</td><td><code>pg_restore</code></td></tr>
-  <tr><td><code>pg_dump -Fd</code></td><td>Directory 格式（支援平行備份/還原）</td><td><code>pg_restore</code></td></tr>
-  <tr><td><code>pg_dumpall</code></td><td>備份整個叢集（僅純文字），含全域物件</td><td><code>psql</code></td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>工具 / 格式</th><th>說明</th><th>還原方式</th></tr>
+    <tr><td><code>pg_dump -Fp</code></td><td>純文字格式（預設）</td><td><code>psql</code></td></tr>
+    <tr><td><code>pg_dump -Fc</code></td><td>壓縮自訂格式</td><td><code>pg_restore</code></td></tr>
+    <tr><td><code>pg_dump -Ft</code></td><td>Tar 格式</td><td><code>pg_restore</code></td></tr>
+    <tr><td><code>pg_dump -Fd</code></td><td>Directory 格式（支援平行備份/還原）</td><td><code>pg_restore</code></td></tr>
+    <tr><td><code>pg_dumpall</code></td><td>備份整個叢集（僅純文字），含全域物件</td><td><code>psql</code></td></tr>
+  </table>
+</div>
 
 <h3>pg_dump 重要選項</h3>
-<table>
-  <tr><th>選項</th><th>說明</th></tr>
-  <tr><td><code>-a</code> / <code>--data-only</code></td><td>僅備份資料（不含 Schema）</td></tr>
-  <tr><td><code>-s</code> / <code>--schema-only</code></td><td>僅備份 Schema（不含資料）</td></tr>
-  <tr><td><code>-n &lt;schema&gt;</code></td><td>僅備份指定 Schema</td></tr>
-  <tr><td><code>-t &lt;table&gt;</code></td><td>僅備份指定資料表</td></tr>
-  <tr><td><code>-f &lt;filename&gt;</code></td><td>指定輸出檔案</td></tr>
-  <tr><td><code>-j njobs</code></td><td>平行備份（僅支援 <code>-Fd</code> 格式）</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>選項</th><th>說明</th></tr>
+    <tr><td><code>-a</code> / <code>--data-only</code></td><td>僅備份資料（不含 Schema）</td></tr>
+    <tr><td><code>-s</code> / <code>--schema-only</code></td><td>僅備份 Schema（不含資料）</td></tr>
+    <tr><td><code>-n &lt;schema&gt;</code></td><td>僅備份指定 Schema</td></tr>
+    <tr><td><code>-t &lt;table&gt;</code></td><td>僅備份指定資料表</td></tr>
+    <tr><td><code>-f &lt;filename&gt;</code></td><td>指定輸出檔案</td></tr>
+    <tr><td><code>-j njobs</code></td><td>平行備份（僅支援 <code>-Fd</code> 格式）</td></tr>
+  </table>
+</div>
 
 <h3>pg_restore 重要選項</h3>
-<table>
-  <tr><th>選項</th><th>說明</th></tr>
-  <tr><td><code>-d &lt;dbname&gt;</code></td><td>指定目標資料庫</td></tr>
-  <tr><td><code>-C</code></td><td>自動建立資料庫後還原</td></tr>
-  <tr><td><code>-c</code> / <code>--clean</code></td><td>先 DROP 再建立物件</td></tr>
-  <tr><td><code>-a</code></td><td>僅還原資料</td></tr>
-  <tr><td><code>-s</code> / <code>--schema-only</code></td><td>僅還原 Schema</td></tr>
-  <tr><td><code>-n &lt;schema&gt;</code></td><td>僅還原指定 Schema</td></tr>
-  <tr><td><code>-t &lt;table&gt;</code></td><td>僅還原指定資料表</td></tr>
-  <tr><td><code>-l</code></td><td>顯示備份檔案的 TOC 清單</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>選項</th><th>說明</th></tr>
+    <tr><td><code>-d &lt;dbname&gt;</code></td><td>指定目標資料庫</td></tr>
+    <tr><td><code>-C</code></td><td>自動建立資料庫後還原</td></tr>
+    <tr><td><code>-c</code> / <code>--clean</code></td><td>先 DROP 再建立物件</td></tr>
+    <tr><td><code>-a</code></td><td>僅還原資料</td></tr>
+    <tr><td><code>-s</code> / <code>--schema-only</code></td><td>僅還原 Schema</td></tr>
+    <tr><td><code>-n &lt;schema&gt;</code></td><td>僅還原指定 Schema</td></tr>
+    <tr><td><code>-t &lt;table&gt;</code></td><td>僅還原指定資料表</td></tr>
+    <tr><td><code>-l</code></td><td>顯示備份檔案的 TOC 清單</td></tr>
+  </table>
+</div>
 
 <h3>pg_basebackup（實體備份）</h3>
 <ul>
@@ -282,27 +347,31 @@ max_wal_senders = 3
 <h2>六、維護作業（Maintenance）</h2>
 
 <h3>維護指令</h3>
-<table>
-  <tr><th>指令</th><th>功能</th></tr>
-  <tr><td><code>VACUUM</code></td><td>回收 Dead Tuples 佔用的空間（不鎖表，不歸還 OS）</td></tr>
-  <tr><td><code>VACUUM FULL</code></td><td>重寫整個資料表，回收更多空間（會鎖表，歸還 OS）</td></tr>
-  <tr><td><code>VACUUM FREEZE</code></td><td>凍結 Row 防止 Transaction ID Wraparound</td></tr>
-  <tr><td><code>ANALYZE</code></td><td>更新查詢規劃器的統計資訊</td></tr>
-  <tr><td><code>VACUUM ANALYZE</code></td><td>同時執行 VACUUM 和 ANALYZE</td></tr>
-  <tr><td><code>REINDEX</code></td><td>重建索引</td></tr>
-  <tr><td><code>CLUSTER</code></td><td>依索引重新排列資料表</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>指令</th><th>功能</th></tr>
+    <tr><td><code>VACUUM</code></td><td>回收 Dead Tuples 佔用的空間（不鎖表，不歸還 OS）</td></tr>
+    <tr><td><code>VACUUM FULL</code></td><td>重寫整個資料表，回收更多空間（會鎖表，歸還 OS）</td></tr>
+    <tr><td><code>VACUUM FREEZE</code></td><td>凍結 Row 防止 Transaction ID Wraparound</td></tr>
+    <tr><td><code>ANALYZE</code></td><td>更新查詢規劃器的統計資訊</td></tr>
+    <tr><td><code>VACUUM ANALYZE</code></td><td>同時執行 VACUUM 和 ANALYZE</td></tr>
+    <tr><td><code>REINDEX</code></td><td>重建索引</td></tr>
+    <tr><td><code>CLUSTER</code></td><td>依索引重新排列資料表</td></tr>
+  </table>
+</div>
 
 <h3>Autovacuum 重要參數</h3>
-<table>
-  <tr><th>參數</th><th>預設值</th><th>說明</th></tr>
-  <tr><td><code>autovacuum</code></td><td><code>on</code></td><td>是否啟用</td></tr>
-  <tr><td><code>autovacuum_max_workers</code></td><td><code>3</code></td><td>最大 Worker 數量</td></tr>
-  <tr><td><code>autovacuum_naptime</code></td><td><code>1min</code></td><td>Launcher 喚醒間隔</td></tr>
-  <tr><td><code>autovacuum_vacuum_scale_factor</code></td><td><code>0.2</code></td><td>觸發 VACUUM 的比例閾值</td></tr>
-  <tr><td><code>autovacuum_work_mem</code></td><td><code>-1</code></td><td>Worker 記憶體（預設用 maintenance_work_mem）</td></tr>
-  <tr><td><code>vacuum_freeze_min_age</code></td><td>—</td><td>凍結 Row 的最小 Transaction 年齡</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>參數</th><th>預設值</th><th>說明</th></tr>
+    <tr><td><code>autovacuum</code></td><td><code>on</code></td><td>是否啟用</td></tr>
+    <tr><td><code>autovacuum_max_workers</code></td><td><code>3</code></td><td>最大 Worker 數量</td></tr>
+    <tr><td><code>autovacuum_naptime</code></td><td><code>1min</code></td><td>Launcher 喚醒間隔</td></tr>
+    <tr><td><code>autovacuum_vacuum_scale_factor</code></td><td><code>0.2</code></td><td>觸發 VACUUM 的比例閾值</td></tr>
+    <tr><td><code>autovacuum_work_mem</code></td><td><code>-1</code></td><td>Worker 記憶體（預設用 maintenance_work_mem）</td></tr>
+    <tr><td><code>vacuum_freeze_min_age</code></td><td>—</td><td>凍結 Row 的最小 Transaction 年齡</td></tr>
+  </table>
+</div>
 
 <div class="tip">💡 <strong>Visibility Map</strong>：追蹤哪些 Page 只包含 Live Tuples，加速 VACUUM 和 Index-Only Scan<br>
 監控：<code>pg_stat_user_tables</code> 查看資料表層級的 Autovacuum 統計</div>
@@ -322,13 +391,15 @@ max_wal_senders = 3
 </ul>
 
 <h3>監控視圖</h3>
-<table>
-  <tr><th>視圖</th><th>位置</th><th>功能</th></tr>
-  <tr><td><code>pg_stat_replication</code></td><td>Primary</td><td>顯示已連線 Replica 的狀態</td></tr>
-  <tr><td><code>pg_stat_wal_receiver</code></td><td>Replica</td><td>顯示 WAL Receiver 程序狀態</td></tr>
-  <tr><td><code>pg_is_in_recovery()</code></td><td>任一端</td><td>檢查是否為 Replica（回傳 true）</td></tr>
-  <tr><td><code>pg_stat_activity</code></td><td>任一端</td><td>顯示目前執行中的查詢</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>視圖</th><th>位置</th><th>功能</th></tr>
+    <tr><td><code>pg_stat_replication</code></td><td>Primary</td><td>顯示已連線 Replica 的狀態</td></tr>
+    <tr><td><code>pg_stat_wal_receiver</code></td><td>Replica</td><td>顯示 WAL Receiver 程序狀態</td></tr>
+    <tr><td><code>pg_is_in_recovery()</code></td><td>任一端</td><td>檢查是否為 Replica（回傳 true）</td></tr>
+    <tr><td><code>pg_stat_activity</code></td><td>任一端</td><td>顯示目前執行中的查詢</td></tr>
+  </table>
+</div>
 
 <h3>Logical Replication</h3>
 <ul>
@@ -339,12 +410,14 @@ max_wal_senders = 3
 </ul>
 
 <h3>高可用工具</h3>
-<table>
-  <tr><th>工具</th><th>功能</th></tr>
-  <tr><td><strong>EDB Failover Manager (EFM)</strong></td><td>自動故障偵測與切換</td></tr>
-  <tr><td><strong>EDB Postgres Distributed</strong></td><td>支援多主寫入（Multi-Master）</td></tr>
-  <tr><td><strong>repmgr</strong></td><td>開源複寫管理工具</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>工具</th><th>功能</th></tr>
+    <tr><td><strong>EDB Failover Manager (EFM)</strong></td><td>自動故障偵測與切換</td></tr>
+    <tr><td><strong>EDB Postgres Distributed</strong></td><td>支援多主寫入（Multi-Master）</td></tr>
+    <tr><td><strong>repmgr</strong></td><td>開源複寫管理工具</td></tr>
+  </table>
+</div>
 
 <!-- ==================== 第八章 ==================== -->
 <h2>八、其他重要概念</h2>
@@ -374,12 +447,14 @@ max_wal_senders = 3
 </ul>
 
 <h3>SERIAL vs IDENTITY</h3>
-<table>
-  <tr><th>項目</th><th>SERIAL</th><th>IDENTITY</th></tr>
-  <tr><td>標準</td><td>PostgreSQL 特有</td><td>✅ SQL 標準（建議使用）</td></tr>
-  <tr><td>GENERATED ALWAYS</td><td>—</td><td>不允許手動插入值</td></tr>
-  <tr><td>GENERATED BY DEFAULT</td><td>—</td><td>允許手動插入值</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>項目</th><th>SERIAL</th><th>IDENTITY</th></tr>
+    <tr><td>標準</td><td>PostgreSQL 特有</td><td>✅ SQL 標準（建議使用）</td></tr>
+    <tr><td>GENERATED ALWAYS</td><td>—</td><td>不允許手動插入值</td></tr>
+    <tr><td>GENERATED BY DEFAULT</td><td>—</td><td>允許手動插入值</td></tr>
+  </table>
+</div>
 
 <h3>其他</h3>
 <ul>
@@ -389,47 +464,53 @@ max_wal_senders = 3
 </ul>
 
 <h3>重要系統目錄</h3>
-<table>
-  <tr><th>目錄/視圖</th><th>功能</th></tr>
-  <tr><td><code>pg_database</code></td><td>儲存資料庫資訊</td></tr>
-  <tr><td><code>pg_stat_activity</code></td><td>目前執行中的查詢</td></tr>
-  <tr><td><code>pg_stat_user_tables</code></td><td>資料表統計</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>目錄/視圖</th><th>功能</th></tr>
+    <tr><td><code>pg_database</code></td><td>儲存資料庫資訊</td></tr>
+    <tr><td><code>pg_stat_activity</code></td><td>目前執行中的查詢</td></tr>
+    <tr><td><code>pg_stat_user_tables</code></td><td>資料表統計</td></tr>
+  </table>
+</div>
 
 <!-- ==================== 第九章 ==================== -->
 <h2>九、考試重點速查</h2>
 
 <h3>常考預設值</h3>
-<table>
-  <tr><th>項目</th><th>預設值</th></tr>
-  <tr><td>WAL segment 大小</td><td><strong>16MB</strong></td></tr>
-  <tr><td>Page 大小</td><td><strong>8KB</strong></td></tr>
-  <tr><td>max_connections</td><td><strong>100</strong></td></tr>
-  <tr><td>superuser_reserved_connections</td><td><strong>3</strong></td></tr>
-  <tr><td>shared_buffers</td><td><strong>128MB</strong>（建議 25% RAM）</td></tr>
-  <tr><td>effective_cache_size</td><td><strong>4GB</strong></td></tr>
-  <tr><td>max_wal_size</td><td><strong>1GB</strong></td></tr>
-  <tr><td>checkpoint_timeout</td><td><strong>5 min</strong></td></tr>
-  <tr><td>autovacuum_max_workers</td><td><strong>3</strong></td></tr>
-  <tr><td>預設 Port</td><td><strong>5432</strong></td></tr>
-  <tr><td>預設 Schema</td><td><strong>public</strong></td></tr>
-  <tr><td>預設 Tablespace</td><td><strong>pg_default, pg_global</strong></td></tr>
-  <tr><td>預設超級使用者</td><td><strong>postgres</strong></td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>項目</th><th>預設值</th></tr>
+    <tr><td>WAL segment 大小</td><td><strong>16MB</strong></td></tr>
+    <tr><td>Page 大小</td><td><strong>8KB</strong></td></tr>
+    <tr><td>max_connections</td><td><strong>100</strong></td></tr>
+    <tr><td>superuser_reserved_connections</td><td><strong>3</strong></td></tr>
+    <tr><td>shared_buffers</td><td><strong>128MB</strong>（建議 25% RAM）</td></tr>
+    <tr><td>effective_cache_size</td><td><strong>4GB</strong></td></tr>
+    <tr><td>max_wal_size</td><td><strong>1GB</strong></td></tr>
+    <tr><td>checkpoint_timeout</td><td><strong>5 min</strong></td></tr>
+    <tr><td>autovacuum_max_workers</td><td><strong>3</strong></td></tr>
+    <tr><td>預設 Port</td><td><strong>5432</strong></td></tr>
+    <tr><td>預設 Schema</td><td><strong>public</strong></td></tr>
+    <tr><td>預設 Tablespace</td><td><strong>pg_default, pg_global</strong></td></tr>
+    <tr><td>預設超級使用者</td><td><strong>postgres</strong></td></tr>
+  </table>
+</div>
 
 <h3>易混淆比較</h3>
-<table>
-  <tr><th>比較項目</th><th>差異</th></tr>
-  <tr><td><code>\a</code> vs <code>\t</code></td><td><code>\a</code> 切換對齊模式；<code>\t</code> 切換僅顯示 Tuples</td></tr>
-  <tr><td><code>\h</code> vs <code>\?</code></td><td><code>\h</code> SQL 指令說明；<code>\?</code> psql 指令說明</td></tr>
-  <tr><td><code>\o</code> vs <code>\w</code></td><td><code>\o</code> 輸出查詢結果至檔案；<code>\w</code> 儲存查詢緩衝區至檔案</td></tr>
-  <tr><td>VACUUM vs VACUUM FULL</td><td>VACUUM 不鎖表不歸還 OS；VACUUM FULL 鎖表歸還 OS</td></tr>
-  <tr><td>SERIAL vs IDENTITY</td><td>SERIAL 是 PG 特有；IDENTITY 是 SQL 標準</td></tr>
-  <tr><td><code>wal_level=replica</code> vs <code>logical</code></td><td>replica 用於串流複寫；logical 用於邏輯複寫</td></tr>
-  <tr><td><code>pg_dump</code> vs <code>pg_dumpall</code></td><td>pg_dump 單一資料庫；pg_dumpall 整個叢集</td></tr>
-  <tr><td><code>--schema-only</code> vs <code>--data-only</code></td><td>僅 Schema vs 僅資料</td></tr>
-  <tr><td><code>pg_reload_conf()</code> vs 重啟</td><td>reload 不中斷服務；部分參數需重啟</td></tr>
-</table>
+<div class="table-wrapper">
+  <table>
+    <tr><th>比較項目</th><th>差異</th></tr>
+    <tr><td><code>\a</code> vs <code>\t</code></td><td><code>\a</code> 切換對齊模式；<code>\t</code> 切換僅顯示 Tuples</td></tr>
+    <tr><td><code>\h</code> vs <code>\?</code></td><td><code>\h</code> SQL 指令說明；<code>\?</code> psql 指令說明</td></tr>
+    <tr><td><code>\o</code> vs <code>\w</code></td><td><code>\o</code> 輸出查詢結果至檔案；<code>\w</code> 儲存查詢緩衝區至檔案</td></tr>
+    <tr><td>VACUUM vs VACUUM FULL</td><td>VACUUM 不鎖表不歸還 OS；VACUUM FULL 鎖表歸還 OS</td></tr>
+    <tr><td>SERIAL vs IDENTITY</td><td>SERIAL 是 PG 特有；IDENTITY 是 SQL 標準</td></tr>
+    <tr><td><code>wal_level=replica</code> vs <code>logical</code></td><td>replica 用於串流複寫；logical 用於邏輯複寫</td></tr>
+    <tr><td><code>pg_dump</code> vs <code>pg_dumpall</code></td><td>pg_dump 單一資料庫；pg_dumpall 整個叢集</td></tr>
+    <tr><td><code>--schema-only</code> vs <code>--data-only</code></td><td>僅 Schema vs 僅資料</td></tr>
+    <tr><td><code>pg_reload_conf()</code> vs 重啟</td><td>reload 不中斷服務；部分參數需重啟</td></tr>
+  </table>
+</div>
 
 <p style="text-align:center; margin-top:40px; color:#666; border-top:2px solid #336791; padding-top:16px;">
   🎯 祝您 PostgreSQL 認證考試順利通過！
@@ -437,4 +518,3 @@ max_wal_senders = 3
 
 </body>
 </html>
-
